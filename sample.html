@@ -4,119 +4,44 @@
    <meta charset="utf-8" />
    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
    <title>Sample Map</title>
-   <script defer
-       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6jB0l5UIoktuFSTL5nkJFXSESl8Ghees&callback=initMap" >
-   </script>
+   	
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6jB0l5UIoktuFSTL5nkJFXSESl8Ghees"></script> 
 
-   <style type="text/css">
-      #map_canvas {
-         width: 100%;
-         height:50%;
-      }
-      html,
-      body {
-         height: 100%;
-         margin: 0;
-         padding: 0;
-      }
 
-   </style>
-   <script type="text/javascript">
-      var map;
-      var marker;
-      var circle;
-      var id;
-      function initMap() {
-         var myLatlng = new google.maps.LatLng(35.683755,139.745625);
-         var mapOptions = {
-           zoom: 14,
-           center: myLatlng
-         }
-         map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-      }
+    <p><button onclick="getMyPlace()">現在位置を取得</button></p>
+    <div id="result"></div>
+    <div id="map" style="width:100%;height:300px;"></div>
 
-      function success(pos) {
-         var crd = pos.coords;
-         var timeStamp = pos.timestamp;
-
-         var currentPos = new google.maps.LatLng( crd.latitude, crd.longitude);
- 
-         if ( marker != undefined )  marker.setMap(null);
-         if ( circle != undefined )  circle.setMap(null);
-
-         /* 現在位置にマーカーを設定 */
-         marker =  new google.maps.Marker({ position: currentPos ,map: map});
-
-         /* 位置の誤差領域 */
-         circle = new google.maps.Circle({
-            strokeColor: "#3333FF",
-            strokeOpacity: 0.8,
-            strokeWeight: 2,
-            fillColor: "#3333FF",
-            fillOpacity: 0.35,
-            map: map,
-            draggable: false,
-            center: currentPos,
-            radius: crd.accuracy   /* 位置の誤差(m)を半径とする */
-         });
-         map.setCenter(currentPos);
-         map.setZoom(14);
-         setInfo(timeStamp,crd);
-      }
-      function error(err) {
-         document.getElementById('tdErrCd').innerHTML = err.code;
-         document.getElementById('tdErrMg').innerHTML = err.message;
-      }
-      function setInfo(timeStamp,crd) {
-         var tableRef = document.getElementById('tblGps');
-         var newRow   = tableRef.insertRow(1);
-         var newCellTime  = newRow.insertCell(0);
-         var newCellLat  = newRow.insertCell(1);
-         var newCellLng  = newRow.insertCell(2);
-         var newCellAcr  = newRow.insertCell(3);
-         newCellTime.innerHTML = timeStamp;
-         newCellLat.innerHTML = crd.latitude;
-         newCellLng.innerHTML = crd.longitude;
-         newCellAcr.innerHTML = crd.accuracy + 'm';
-      }
-      function startWatchPosition() {
-         if ( id == undefined ) {
-            var options = {
-               enableHighAccuracy: true,
-               timeout: 5000,
-               maximumAge: 0
-            };
-            id = navigator.geolocation.watchPosition(success, error, options);
-         }
-      }
-      function clearWatchPosition() {
-         if ( id != undefined ) {
-            navigator.geolocation.clearWatch(id);
-            id = null;
-         }
-         if ( marker != undefined )  marker.setMap(null);
-         if ( circle != undefined )  circle.setMap(null);
-      }
-   </script>
-</head>
-<body>
-   <div id="map_canvas"></div>
-   <br /><input type="button" value="追跡開始" onclick="startWatchPosition();" />
-   <br /><input type="button" value="追跡終了" onclick="clearWatchPosition();" />
-   <p>
-      <table  style="width:100%">
-         <tr><th>エラーコード</th><td id="tdErrCd"></td></tr>
-         <tr><th>エラーメッセージ</th><td id="tdErrMg"></td></tr>
-      </table>
-      <table style="width:100%" id="tblGps">
-         <tr>
-            <th>タイムスタンプ</th>
-            <th>緯度</th>
-            <th>経度</th>
-            <th>位置（正確さ）</th>
-         </tr>
-      
-      </table>
-   </p>
+    <script>
+        function getMyPlace() {
+          var output = document.getElementById("result");
+          if (!navigator.geolocation){//Geolocation apiがサポートされていない場合
+            output.innerHTML = "<p>Geolocationはあなたのブラウザーでサポートされておりません</p>";
+            return;
+          }
+          function success(position) {
+            var latitude  = position.coords.latitude;//緯度
+            var longitude = position.coords.longitude;//経度
+            output.innerHTML = '<p>緯度 ' + latitude + '° <br>経度 ' + longitude + '°</p>';
+            // 位置情報
+            var latlng = new google.maps.LatLng( latitude , longitude ) ;
+            // Google Mapsに書き出し
+            var map = new google.maps.Map( document.getElementById( 'map' ) , {
+                zoom: 15 ,// ズーム値
+                center: latlng ,// 中心座標
+            } ) ;
+            // マーカーの新規出力
+            new google.maps.Marker( {
+                map: map ,
+                position: latlng ,
+            } ) ;
+          };
+          function error() {
+            //エラーの場合
+            output.innerHTML = "座標位置を取得できません";
+          };
+          navigator.geolocation.getCurrentPosition(success, error);//成功と失敗を判断
+        }
+        </script>
 </body>
 </html>
